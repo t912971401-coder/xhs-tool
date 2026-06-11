@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>家政公司公众号内容生成助手</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+body{background:#111;color:#fff;height:100vh;overflow:hidden;}
+.container{display:flex;height:100vh;}
+
+/* 左侧 */
+.left-panel{width:43%;background:#181818;padding:16px;overflow-y:auto;border-right:1px solid #333;}
+.right-panel{flex:1;background:#111;padding:20px;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;}
+
+.header{margin-bottom:14px;}
+.header h1{color:#ff2442;font-size:22px;margin-bottom:3px;}
+.header p{color:#888;font-size:11px;}
+
+.card{background:#1f1f1f;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #2a2a2a;}
+.card h2{color:#ff2442;font-size:14px;margin-bottom:10px;}
+
+input,textarea,select{
+    width:100%;background:#111;border:1px solid #333;border-radius:8px;
+    padding:9px;color:#fff;margin-bottom:7px;font-size:12px;
+}
+textarea{resize:vertical;}
+select{cursor:pointer;}
+
+button{
+    background:#ff2442;color:#fff;border:none;padding:9px 13px;
+    border-radius:8px;cursor:pointer;transition:0.15s;font-weight:bold;font-size:11px;
+}
+button:hover{opacity:0.9;}
+.btn-secondary{background:#333;}
+.btn-group{display:flex;gap:6px;flex-wrap:wrap;}
+
+.filter-row{display:flex;gap:8px;margin-bottom:8px;}
+.filter-row select{flex:1;margin-bottom:0;}
+
+.topic-box{
+    background:#111;border:1px solid #333;border-radius:10px;
+    padding:10px;margin-bottom:6px;cursor:pointer;transition:0.15s;
+}
+.topic-box:hover{border-color:#ff2442;background:#1b1b1b;}
+.badge{display:inline-block;border-radius:4px;font-size:10px;padding:2px 6px;margin-right:4px;}
+.badge-type{background:#ff244220;color:#ff2442;}
+.badge-biz{background:#4a90d920;color:#4a90d9;}
+
+/* ===== 图片卡片 ===== */
+.image-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.image-card{
+    background:#151515;border:1px solid #333;border-radius:12px;
+    padding:8px;min-width:0;display:flex;flex-direction:column;
+}
+.image-card.cover-card{width:100%;}
+.image-card.content-card{flex:1;min-width:90px;}
+.image-card.ending-card{width:100%;}
+
+.image-card h4{color:#ff2442;font-size:11px;margin-bottom:6px;}
+
+.mode-tabs{display:flex;gap:3px;margin-bottom:6px;}
+.mode-tab{
+    flex:1;padding:5px 3px;text-align:center;font-size:10px;
+    background:#111;border:1px solid #333;border-radius:5px;cursor:pointer;color:#888;
+}
+.mode-tab.active{background:#ff2442;color:#fff;border-color:#ff2442;}
+
+.upload-zone{
+    border:2px dashed #333;border-radius:8px;padding:12px 6px;
+    text-align:center;cursor:pointer;transition:0.15s;
+    display:flex;align-items:center;justify-content:center;
+    min-height:60px;font-size:11px;color:#666;
+}
+.upload-zone:hover{border-color:#ff2442;background:#1a1a1a;}
+.upload-zone.has-image{padding:3px;border-style:solid;}
+
+.upload-area{display:flex;flex-direction:column;}
+.upload-area.hidden{display:none;}
+
+.ai-gen-area{display:none;flex-direction:column;gap:5px;}
+.ai-gen-area.active{display:flex;}
+
+.image-card .image-preview{
+    width:100%;background:#222;border-radius:6px;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;color:#555;font-size:10px;
+    margin-top:6px;
+}
+.image-preview img{width:100%;height:100%;object-fit:cover;}
+.cover-thumb{aspect-ratio:900/383;}
+.square-thumb{aspect-ratio:1/1;}
+
+.small-btn{padding:4px 7px;font-size:10px;}
+.insert-hint{color:#666;font-size:9px;margin-top:2px;}
+
+/* ===== 右侧公众号预览 ===== */
+.wx-article{
+    width:420px;background:#fff;color:#333;border-radius:6px;
+    overflow:visible;box-shadow:0 4px 30px rgba(0,0,0,0.6);
+}
+.wx-topbar{
+    background:#f5f5f5;padding:10px 14px;display:flex;align-items:center;
+    gap:8px;border-bottom:1px solid #e5e5e5;border-radius:6px 6px 0 0;
+}
+.wx-topbar .avatar{width:28px;height:28px;border-radius:50%;background:#ff2442;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:bold;}
+.wx-topbar .name{font-size:12px;font-weight:bold;color:#333;}
+.wx-topbar .time{font-size:10px;color:#999;}
+
+/* 封面大图 */
+.wx-cover{
+    width:100%;aspect-ratio:900/383;background:#f0f0f0;
+    display:flex;align-items:center;justify-content:center;
+    color:#bbb;font-size:12px;overflow:hidden;
+}
+.wx-cover img{width:100%;height:100%;object-fit:cover;}
+.wx-cover.no-image{color:#bbb;}
+
+.wx-header{padding:16px 18px 0;}
+.wx-title{font-size:19px;font-weight:bold;color:#111;line-height:1.5;}
+
+.wx-summary{
+    margin:6px 18px 0;padding:8px 0;font-size:13px;color:#888;
+    line-height:1.6;border-bottom:1px solid #f0f0f0;
+}
+
+.wx-body{
+    padding:12px 18px;font-size:14px;line-height:1.85;color:#333;
+}
+.wx-body p{margin-bottom:12px;}
+.wx-subtitle{font-weight:bold;color:#111;margin:18px 0 8px;font-size:15px;}
+
+/* 正文中的配图 */
+.wx-inline-image{
+    width:100%;aspect-ratio:16/9;background:#f5f5f5;
+    margin:14px 0;border-radius:4px;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    color:#ccc;font-size:11px;
+}
+.wx-inline-image img{width:100%;height:100%;object-fit:cover;}
+.wx-inline-image.no-image{color:#ccc;}
+.wx-inline-image.square{aspect-ratio:1/1;max-width:80%;margin:14px auto;}
+
+.wx-cta{
+    margin:8px 18px 0;padding:12px;background:#fff8f8;
+    border-left:3px solid #ff2442;border-radius:4px;
+    font-size:12px;color:#555;line-height:1.7;white-space:pre-wrap;
+}
+
+.wx-ending-image{
+    width:80%;aspect-ratio:1/1;background:#f5f5f5;
+    margin:16px auto 0;border-radius:4px;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    color:#ccc;font-size:11px;
+}
+.wx-ending-image img{width:100%;height:100%;object-fit:cover;}
+
+.wx-rec{
+    margin:8px 18px 0;padding:10px;background:#f9f9f9;border-radius:6px;
+}
+.wx-rec .rec-title{font-size:10px;color:#999;margin-bottom:4px;}
+.wx-rec .rec-item{font-size:11px;color:#576b95;padding:2px 0;}
+
+.wx-footer{padding:12px 18px;text-align:center;border-top:1px solid #f0f0f0;margin-top:8px;}
+.wx-footer .read{font-size:10px;color:#999;}
+
+/* 图片删除按钮 */
+.img-delete-btn{
+    position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;
+    border:none;border-radius:50%;width:20px;height:20px;font-size:11px;
+    cursor:pointer;display:none;align-items:center;justify-content:center;
+}
+.image-preview:hover .img-delete-btn{display:flex;}
+.image-preview{position:relative;}
+
+/* 历史 */
+.history-item{
+    background:#111;border:1px solid #333;padding:8px;border-radius:8px;
+    margin-bottom:5px;cursor:pointer;font-size:11px;
+}
+.history-item:hover{border-color:#ff2442;}
+
+.link-btn{
+    display:inline-block;text-decoration:none;margin-top:8px;
+    background:#ff2442;color:#fff;padding:9px 14px;border-radius:8px;
+    font-size:11px;text-align:center;
+}
+
+.modal-overlay{
+    display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.85);z-index:999;justify-content:center;align-items:center;
+}
+.modal-box{
+    background:#1f1f1f;border-radius:18px;padding:22px;
+    width:650px;max-height:85vh;overflow-y:auto;border:1px solid #333;
+}
+.modal-box h2{color:#ff2442;margin-bottom:14px;font-size:16px;}
+.modal-box label{color:#aaa;font-size:11px;display:block;margin-bottom:3px;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:#444;border-radius:8px;}
+.no-ai-tip{color:#ff2442;font-size:10px;margin-top:3px;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- ==================== 左侧 ==================== -->
+<div class="left-panel">
+
+    <div class="header">
+        <h1>🏠 家政公司 · 公众号助手</h1>
+        <p>月嫂｜育婴师｜养老护理｜女性就业培训 · 图文结合预览</p>
+    </div>
+
+    <!-- API -->
+    <div class="card">
+        <h2>🔑 DeepSeek API</h2>
+        <input type="password" id="apiKey" placeholder="输入 DeepSeek API Key（sk-...）">
+    </div>
+
+    <!-- 选题 -->
+    <div class="card">
+        <h2>📋 选题推荐（50个）</h2>
+        <div class="filter-row">
+            <select id="bizLine" onchange="refreshTopics()">
+                <option value="all">全部业务线</option>
+                <option value="月嫂">👶 月嫂/母婴</option>
+                <option value="育婴师">🧸 育婴师/育儿嫂</option>
+                <option value="养老">👴 养老护理</option>
+                <option value="就业">💼 女性就业/培训</option>
+            </select>
+            <select id="articleType" onchange="refreshTopics()">
+                <option value="all">全部类型</option>
+                <option value="服务介绍">服务介绍</option>
+                <option value="客户案例">客户案例</option>
+                <option value="行业干货">行业干货</option>
+                <option value="避坑指南">避坑指南</option>
+                <option value="招聘培训">招聘培训</option>
+                <option value="活动促销">活动促销</option>
+                <option value="信任背书">信任背书</option>
+            </select>
+        </div>
+        <div id="topicList"></div>
+        <div class="btn-group" style="margin-bottom:6px;">
+            <button onclick="refreshTopics()">🎲 换一批</button>
+        </div>
+        <textarea id="customTopic" rows="2" placeholder="或手动输入选题..."></textarea>
+        <button style="width:100%;font-size:13px;padding:11px;" onclick="generateArticle()">
+            生成公众号文章
+        </button>
+        <div class="no-ai-tip">已去AI味 | 正文中用 [插图] 标记配图插入位置</div>
+    </div>
+
+    <!-- ===== 图片区 ===== -->
+    <div class="card">
+        <h2>🖼️ 文章配图（与右侧预览联动）</h2>
+        <p style="color:#666;font-size:10px;margin-bottom:8px;">上传/生成的图片会自动出现在右侧文章预览中</p>
+
+        <div class="image-grid">
+
+            <!-- 封面图 -->
+            <div class="image-card cover-card">
+                <h4>📱 封面大图 900×383（文章顶部）</h4>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" onclick="switchMode(0,'upload')">📁 上传</div>
+                    <div class="mode-tab" onclick="switchMode(0,'ai')">🤖 AI生成</div>
+                </div>
+                <div class="upload-area" id="uploadArea0">
+                    <div class="upload-zone" id="uploadZone0" onclick="document.getElementById('fileInput0').click()">
+                        <span id="uploadText0">点击上传封面图</span>
+                    </div>
+                    <input type="file" accept="image/*" id="fileInput0" onchange="handleUpload(0)" style="display:none;">
+                </div>
+                <div class="ai-gen-area" id="aiArea0">
+                    <textarea id="prompt0" rows="2" style="font-size:10px;">温馨家政服务场景，母婴护理或老人关怀的真实瞬间，自然光线，生活化摄影风格</textarea>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <select id="aiApi0" style="font-size:10px;padding:4px;margin-bottom:0;flex:1;">
+                            <option value="pollinations">Pollinations（免费）</option>
+                            <option value="doubao">豆包/火山引擎</option>
+                        </select>
+                        <input type="password" id="doubaoKey0" placeholder="豆包Key" style="font-size:10px;padding:4px;margin-bottom:0;width:70px;display:none;">
+                    </div>
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(0)">生成</button>
+                        <button class="small-btn btn-secondary" onclick="generateImage(0)">换一张</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 内容配图 x3 -->
+            <div class="image-card content-card" id="contentCard1">
+                <h4>📷 配图① 1080×1080</h4>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" onclick="switchMode(1,'upload')">📁 上传</div>
+                    <div class="mode-tab" onclick="switchMode(1,'ai')">🤖 AI生成</div>
+                </div>
+                <div class="upload-area" id="uploadArea1">
+                    <div class="upload-zone" id="uploadZone1" onclick="document.getElementById('fileInput1').click()">
+                        <span id="uploadText1">上传配图①</span>
+                    </div>
+                    <input type="file" accept="image/*" id="fileInput1" onchange="handleUpload(1)" style="display:none;">
+                </div>
+                <div class="ai-gen-area" id="aiArea1">
+                    <textarea id="prompt1" rows="2" style="font-size:10px;">家政服务专业场景，干净整洁环境，护理人员细心工作，真实自然</textarea>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <select id="aiApi1" style="font-size:10px;padding:4px;margin-bottom:0;flex:1;">
+                            <option value="pollinations">Pollinations（免费）</option>
+                            <option value="doubao">豆包/火山引擎</option>
+                        </select>
+                        <input type="password" id="doubaoKey1" placeholder="豆包Key" style="font-size:10px;padding:4px;margin-bottom:0;width:70px;display:none;">
+                    </div>
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(1)">生成</button>
+                        <button class="small-btn btn-secondary" onclick="generateImage(1)">换一张</button>
+                    </div>
+                </div>
+                <div class="insert-hint">正文中 [插图1] 处将替换为此图</div>
+            </div>
+
+            <div class="image-card content-card" id="contentCard2">
+                <h4>📷 配图② 1080×1080</h4>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" onclick="switchMode(2,'upload')">📁 上传</div>
+                    <div class="mode-tab" onclick="switchMode(2,'ai')">🤖 AI生成</div>
+                </div>
+                <div class="upload-area" id="uploadArea2">
+                    <div class="upload-zone" id="uploadZone2" onclick="document.getElementById('fileInput2').click()">
+                        <span id="uploadText2">上传配图②</span>
+                    </div>
+                    <input type="file" accept="image/*" id="fileInput2" onchange="handleUpload(2)" style="display:none;">
+                </div>
+                <div class="ai-gen-area" id="aiArea2">
+                    <textarea id="prompt2" rows="2" style="font-size:10px;">家政服务细节展示，温馨家庭氛围，服务人员与客户的互动，自然光线</textarea>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <select id="aiApi2" style="font-size:10px;padding:4px;margin-bottom:0;flex:1;">
+                            <option value="pollinations">Pollinations（免费）</option>
+                            <option value="doubao">豆包/火山引擎</option>
+                        </select>
+                        <input type="password" id="doubaoKey2" placeholder="豆包Key" style="font-size:10px;padding:4px;margin-bottom:0;width:70px;display:none;">
+                    </div>
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(2)">生成</button>
+                        <button class="small-btn btn-secondary" onclick="generateImage(2)">换一张</button>
+                    </div>
+                </div>
+                <div class="insert-hint">正文中 [插图2] 处将替换为此图</div>
+            </div>
+
+            <div class="image-card content-card" id="contentCard3">
+                <h4>📷 配图③ 1080×1080</h4>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" onclick="switchMode(3,'upload')">📁 上传</div>
+                    <div class="mode-tab" onclick="switchMode(3,'ai')">🤖 AI生成</div>
+                </div>
+                <div class="upload-area" id="uploadArea3">
+                    <div class="upload-zone" id="uploadZone3" onclick="document.getElementById('fileInput3').click()">
+                        <span id="uploadText3">上传配图③</span>
+                    </div>
+                    <input type="file" accept="image/*" id="fileInput3" onchange="handleUpload(3)" style="display:none;">
+                </div>
+                <div class="ai-gen-area" id="aiArea3">
+                    <textarea id="prompt3" rows="2" style="font-size:10px;">家政培训或团队合影，专业服务形象，积极向上的工作氛围</textarea>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <select id="aiApi3" style="font-size:10px;padding:4px;margin-bottom:0;flex:1;">
+                            <option value="pollinations">Pollinations（免费）</option>
+                            <option value="doubao">豆包/火山引擎</option>
+                        </select>
+                        <input type="password" id="doubaoKey3" placeholder="豆包Key" style="font-size:10px;padding:4px;margin-bottom:0;width:70px;display:none;">
+                    </div>
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(3)">生成</button>
+                        <button class="small-btn btn-secondary" onclick="generateImage(3)">换一张</button>
+                    </div>
+                </div>
+                <div class="insert-hint">正文中 [插图3] 处将替换为此图</div>
+            </div>
+
+            <!-- 结尾引导图 -->
+            <div class="image-card ending-card">
+                <h4>📲 结尾引导图 1080×1080（转化区上方）</h4>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" onclick="switchMode(4,'upload')">📁 上传</div>
+                    <div class="mode-tab" onclick="switchMode(4,'ai')">🤖 AI生成</div>
+                </div>
+                <div class="upload-area" id="uploadArea4">
+                    <div class="upload-zone" id="uploadZone4" onclick="document.getElementById('fileInput4').click()">
+                        <span id="uploadText4">上传结尾引导图</span>
+                    </div>
+                    <input type="file" accept="image/*" id="fileInput4" onchange="handleUpload(4)" style="display:none;">
+                </div>
+                <div class="ai-gen-area" id="aiArea4">
+                    <textarea id="prompt4" rows="2" style="font-size:10px;">温暖家庭氛围，引导关注或添加微信的简约设计，干净专业风格</textarea>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <select id="aiApi4" style="font-size:10px;padding:4px;margin-bottom:0;flex:1;">
+                            <option value="pollinations">Pollinations（免费）</option>
+                            <option value="doubao">豆包/火山引擎</option>
+                        </select>
+                        <input type="password" id="doubaoKey4" placeholder="豆包Key" style="font-size:10px;padding:4px;margin-bottom:0;width:70px;display:none;">
+                    </div>
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(4)">生成</button>
+                        <button class="small-btn btn-secondary" onclick="generateImage(4)">换一张</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 发布 -->
+    <div class="card">
+        <h2>🚀 一键搬运</h2>
+        <div class="btn-group">
+            <button onclick="copyFormatted()">📋 复制全文</button>
+            <button onclick="copyBodyOnly()" class="btn-secondary">📄 复制正文</button>
+            <button onclick="copySection('title')" class="btn-secondary">📌 复制标题</button>
+        </div>
+        <div class="btn-group" style="margin-top:5px;">
+            <button onclick="editArticle()" class="btn-secondary">✏️ 微调修改</button>
+        </div>
+        <a class="link-btn" href="https://mp.weixin.qq.com/" target="_blank" style="display:block;">
+            去微信公众号后台发布 →
+        </a>
+    </div>
+
+    <!-- 历史 -->
+    <div class="card">
+        <h2>📚 历史（20条）</h2>
+        <div id="historyList"></div>
+        <button onclick="clearHistory()" class="btn-secondary" style="width:100%;margin-top:5px;">清空历史</button>
+    </div>
+
+</div>
+
+<!-- ==================== 右侧预览 ==================== -->
+<div class="right-panel">
+    <div class="wx-article" id="wxArticle">
+
+        <!-- 顶部栏 -->
+        <div class="wx-topbar">
+            <div class="avatar">家</div>
+            <div><div class="name">XX家政服务</div><div class="time" id="articleTime">今天</div></div>
+        </div>
+
+        <!-- 封面大图 -->
+        <div class="wx-cover no-image" id="wxCover">
+            <span>封面图（上传后显示）</span>
+        </div>
+
+        <!-- 标题 -->
+        <div class="wx-header">
+            <div class="wx-title" id="previewTitle">点击左侧生成按钮，文章在此预览</div>
+        </div>
+
+        <!-- 摘要 -->
+        <div class="wx-summary" id="previewSummary">摘要会显示在这里</div>
+
+        <!-- 正文（含嵌入式配图） -->
+        <div class="wx-body" id="previewBody">
+            选择业务线和文章类型，点击选题，上传配图，然后生成文章。<br><br>正文中写 [插图1]、[插图2]、[插图3] 来标记配图位置。
+        </div>
+
+        <!-- 结尾引导图 -->
+        <div class="wx-ending-image no-image" id="wxEndingImage">
+            <span>引导图（上传后显示）</span>
+        </div>
+
+        <!-- 转化引导 -->
+        <div class="wx-cta" id="previewCta"></div>
+
+        <!-- 推荐阅读 -->
+        <div class="wx-rec" id="previewRec">
+            <div class="rec-title">— 推荐阅读 —</div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="wx-footer"><span class="read">阅读 3281</span></div>
+
+    </div>
+</div>
+
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+        <h2>✏️ 微调文章</h2>
+        <label>标题</label>
+        <textarea id="editTitle" rows="2" style="margin-bottom:10px;"></textarea>
+        <label>摘要</label>
+        <textarea id="editSummary" rows="2" style="margin-bottom:10px;"></textarea>
+        <label>正文（[插图1][插图2][插图3] 标记配图位置）</label>
+        <textarea id="editBody" rows="14" style="margin-bottom:10px;"></textarea>
+        <label>转化引导</label>
+        <textarea id="editCta" rows="3" style="margin-bottom:14px;"></textarea>
+        <div class="btn-group">
+            <button onclick="saveEdit()">保存修改</button>
+            <button onclick="closeEdit()" class="btn-secondary">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+// ============ 全局图片数据 ============
+// 0=封面, 1-3=内容配图, 4=结尾引导图
+const images = [
+    null, null, null, null, null
+]; // {dataUrl, isAi, prompt}
+
+// ============ 选题库 ============
+const topics = [
+    // 服务介绍 7
+    {biz:"月嫂",type:"服务介绍",title:"月嫂一天具体做哪些事？这份时间表可以参考"},
+    {biz:"育婴师",type:"服务介绍",title:"育婴师和月嫂不一样，很多家庭找错了"},
+    {biz:"养老",type:"服务介绍",title:"居家护理员到底管哪些？看完这个清单就清楚了"},
+    {biz:"就业",type:"服务介绍",title:"家政培训从第一天到上岗，中间都学什么"},
+    {biz:"月嫂",type:"服务介绍",title:"不同价位的月嫂差在哪？服务内容一项项对比"},
+    {biz:"养老",type:"服务介绍",title:"住家护理和小时制护工怎么选，主要看老人这几点"},
+    {biz:"育婴师",type:"服务介绍",title:"0到3岁每个阶段育儿嫂该做什么，对照着看"},
+    // 客户案例 8
+    {biz:"月嫂",type:"客户案例",title:"二胎妈妈跟我说，花一万多请月嫂是她做过最对的决定"},
+    {biz:"养老",type:"客户案例",title:"客户女儿发来一段话：谢谢护理员阿姨替我照顾爸爸"},
+    {biz:"就业",type:"客户案例",title:"40岁从工厂辞职当月嫂，她说比原来挣得多也更有尊严"},
+    {biz:"育婴师",type:"客户案例",title:"上班后孩子交给育儿嫂，这位妈妈终于能睡整觉了"},
+    {biz:"月嫂",type:"客户案例",title:"一个客户连续两胎指定同一个阿姨，她说原因很简单"},
+    {biz:"养老",type:"客户案例",title:"独居老爷子有了护理员，儿子说这钱花得值"},
+    {biz:"就业",type:"客户案例",title:"零基础学养老护理，45岁大姐培训完当月就接了单"},
+    {biz:"育婴师",type:"客户案例",title:"宝宝从整夜哭闹到一觉天亮，育儿嫂只用了三天调整"},
+    // 行业干货 8
+    {biz:"月嫂",type:"行业干货",title:"面试月嫂时问这十个问题，少问一个都可能出问题"},
+    {biz:"育婴师",type:"行业干货",title:"0到1岁每个月护理重点不同，按月整理了一份参考"},
+    {biz:"养老",type:"行业干货",title:"老人在家要注意的八个安全细节，每一条都重要"},
+    {biz:"就业",type:"行业干货",title:"今年家政行业缺人缺到什么程度，一组数据说明白"},
+    {biz:"月嫂",type:"行业干货",title:"产后头七天吃什么，月嫂给的月子餐清单照着做就行"},
+    {biz:"养老",type:"行业干货",title:"照顾失能老人五个关键动作，家属一定要学会"},
+    {biz:"育婴师",type:"行业干货",title:"宝宝睡眠怎么调，不同月龄的方法不一样"},
+    {biz:"就业",type:"行业干货",title:"月嫂、育儿嫂、护理员三条路，收入和要求差别挺大"},
+    // 避坑指南 7
+    {biz:"月嫂",type:"避坑指南",title:"请月嫂踩过五个坑，过来人告诉你哪些事提前问清楚"},
+    {biz:"养老",type:"避坑指南",title:"选护理员不能光看价格，这四个方面比价格重要得多"},
+    {biz:"就业",type:"避坑指南",title:"想学家政先看这三点，不少人交了钱才发现被坑"},
+    {biz:"育婴师",type:"避坑指南",title:"请育儿嫂最容易出问题的三个环节，提前知道就不慌"},
+    {biz:"月嫂",type:"避坑指南",title:"熟人介绍的月嫂就靠谱吗，这些风险要想清楚"},
+    {biz:"养老",type:"避坑指南",title:"送养老院还是请人在家照顾，算一笔账就明白了"},
+    {biz:"就业",type:"避坑指南",title:"月嫂月入过万是真的还是吹的，实际收入到底多少"},
+    // 招聘培训 7
+    {biz:"就业",type:"招聘培训",title:"月嫂一个月能挣多少，从六千到两万的差距在哪"},
+    {biz:"就业",type:"招聘培训",title:"35岁转行做月嫂行不行，过来人的经历可以参考"},
+    {biz:"就业",type:"招聘培训",title:"免费学家政还给推荐工作，这个政策知道的人不多"},
+    {biz:"就业",type:"招聘培训",title:"做月嫂要什么条件，年龄学历证书一条条说"},
+    {biz:"就业",type:"招聘培训",title:"为什么越来越多年轻人愿意做育婴师"},
+    {biz:"就业",type:"招聘培训",title:"养老护理员缺口有多大，考了证基本不愁没活"},
+    {biz:"就业",type:"招聘培训",title:"从普通阿姨做到培训讲师，家政这条路怎么往上走"},
+    // 活动促销 7
+    {biz:"月嫂",type:"活动促销",title:"第一次签约月嫂减500，新客户有这个福利"},
+    {biz:"月嫂",type:"活动促销",title:"老客户介绍朋友来，两边各送一天免费服务"},
+    {biz:"养老",type:"活动促销",title:"母亲节给妈妈约了护理服务，打八折还送一次体检"},
+    {biz:"就业",type:"活动促销",title:"这周报名家政培训，考证费用我们出"},
+    {biz:"育婴师",type:"活动促销",title:"签育儿嫂服务送宝宝早教体验课，限这个月"},
+    {biz:"养老",type:"活动促销",title:"过年期间护理服务不停，提前预约减200"},
+    {biz:"月嫂",type:"活动促销",title:"两位宝妈一起签月嫂，每人减800"},
+    // 信任背书 6
+    {biz:"月嫂",type:"信任背书",title:"我们这边每一位月嫂都有证，不满意可以换"},
+    {biz:"月嫂",type:"信任背书",title:"三千多个家庭选了我们，背后是这些保障在兜底"},
+    {biz:"养老",type:"信任背书",title:"护理员上岗前做了背景调查买了保险，三重保障"},
+    {biz:"就业",type:"信任背书",title:"和五十多家公司合作，学员毕业基本都能安排上岗"},
+    {biz:"育婴师",type:"信任背书",title:"每个育儿嫂上岗前至少培训120个小时"},
+    {biz:"养老",type:"信任背书",title:"公司资质团队服务承诺，一条条摆出来看"}
+];
+
+let currentArticle = null;
+
+// ============ 选题 ============
+function refreshTopics(){
+    const bizLine = document.getElementById("bizLine").value;
+    const articleType = document.getElementById("articleType").value;
+    let filtered = topics;
+    if(bizLine!=="all") filtered = filtered.filter(t=>t.biz===bizLine);
+    if(articleType!=="all") filtered = filtered.filter(t=>t.type===articleType);
+    const shuffled = [...filtered].sort(()=>0.5-Math.random());
+    const picked = shuffled.slice(0,3);
+    const box = document.getElementById("topicList");
+    if(picked.length===0){
+        box.innerHTML = `<div style="color:#555;text-align:center;padding:10px;font-size:11px;">该组合暂无选题</div>`;
+        return;
+    }
+    box.innerHTML = "";
+    picked.forEach(item=>{
+        const div = document.createElement("div");
+        div.className = "topic-box";
+        div.innerHTML = `<div style="margin-bottom:2px;"><span class="badge badge-type">${item.type}</span><span class="badge badge-biz">${item.biz}</span></div><div style="font-size:11px;line-height:1.5;">${item.title}</div>`;
+        div.onclick = ()=>{
+            document.getElementById("customTopic").value = item.title;
+            document.querySelectorAll(".topic-box").forEach(b=>b.style.borderColor="#333");
+            div.style.borderColor = "#ff2442";
+        };
+        box.appendChild(div);
+    });
+}
+refreshTopics();
+
+// ============ 图片模式切换 ============
+function switchMode(index, mode){
+    const prefix = index <= 3 ? `contentCard${index}` : (index === 0 ? null : null);
+    const aiArea = document.getElementById(`aiArea${index}`);
+    const uploadArea = document.getElementById(`uploadArea${index}`);
+    // 找到同一张卡里的 tabs
+    const card = aiArea.parentElement;
+    const tabs = card.querySelectorAll(".mode-tab");
+    tabs.forEach(t=>t.classList.remove("active"));
+    if(mode==="upload"){
+        tabs[0].classList.add("active");
+        uploadArea.classList.remove("hidden");
+        aiArea.classList.remove("active");
+    } else {
+        tabs[1].classList.add("active");
+        uploadArea.classList.add("hidden");
+        aiArea.classList.add("active");
+    }
+}
+
+// ============ 图片上传（同步到右侧预览） ============
+function handleUpload(index){
+    const file = document.getElementById(`fileInput${index}`).files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+        const dataUrl = e.target.result;
+        images[index] = {dataUrl, isAi:false};
+        // 更新上传区
+        const zone = document.getElementById(`uploadZone${index}`);
+        zone.classList.add("has-image");
+        const textEl = document.getElementById(`uploadText${index}`);
+        if(textEl) textEl.innerText = "点击更换";
+        // 同步到右侧预览
+        syncImageToPreview(index);
+    };
+    reader.readAsDataURL(file);
+}
+
+// ============ AI生图 ============
+function generateImage(index){
+    const apiSelect = document.getElementById(`aiApi${index}`).value;
+    const prompt = document.getElementById(`prompt${index}`).value;
+
+    if(apiSelect === "pollinations"){
+        const translated = translatePrompt(prompt);
+        const encoded = encodeURIComponent(translated);
+        const seed = Math.floor(Math.random()*999999);
+        const size = index===0 ? "width=900&height=383" : "width=1080&height=1080";
+        const url = `https://image.pollinations.ai/prompt/${encoded}?${size}&nologo=true&seed=${seed}`;
+        images[index] = {dataUrl:url, isAi:true, prompt};
+        syncImageToPreview(index);
+    } else {
+        const doubaoKey = document.getElementById(`doubaoKey${index}`).value.trim();
+        if(!doubaoKey){alert("请先输入豆包/火山引擎 API Key");return;}
+        generateDoubaoImage(index, prompt, doubaoKey);
+    }
+}
+
+async function generateDoubaoImage(index, prompt, apiKey){
+    try{
+        const response = await fetch("https://visual.volcengineapi.com/",{
+            method:"POST",
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
+            body:JSON.stringify({
+                req_key:"high_aes_general_v20_L",
+                prompt:prompt,
+                width:index===0?900:1080,
+                height:index===0?383:1080,
+                return_url:true
+            })
+        });
+        const data = await response.json();
+        if(data.code!==10000) throw new Error(data.message||"生图失败");
+        const imgUrl = data.data?.image_urls?.[0];
+        if(imgUrl){
+            images[index] = {dataUrl:imgUrl, isAi:true, prompt};
+            syncImageToPreview(index);
+        }
+    } catch(err){
+        alert("豆包生图失败："+err.message);
+    }
+}
+
+// ============ 同步图片到右侧预览 ============
+function syncImageToPreview(index){
+    if(!images[index] || !images[index].dataUrl) return;
+
+    const imgSrc = images[index].dataUrl;
+
+    if(index === 0){
+        // 封面图
+        const cover = document.getElementById("wxCover");
+        cover.innerHTML = `<img src="${imgSrc}" alt="封面">`;
+        cover.classList.remove("no-image");
+    } else if(index >= 1 && index <= 3){
+        // 内容配图 —— 重建正文中的图片
+        rebuildBodyWithImages();
+    } else if(index === 4){
+        // 结尾引导图
+        const ending = document.getElementById("wxEndingImage");
+        ending.innerHTML = `<img src="${imgSrc}" alt="引导图">`;
+        ending.classList.remove("no-image");
+    }
+}
+
+// ============ 重建正文（将 [插图N] 替换为图片） ============
+function rebuildBodyWithImages(){
+    const bodyEl = document.getElementById("previewBody");
+    if(!currentArticle) return;
+
+    let body = currentArticle.body || "";
+    if(!body.trim()) return;
+
+    // 按段落分割，处理 [插图N] 标记
+    const lines = body.split("\n");
+    let html = "";
+
+    lines.forEach(line=>{
+        const t = line.trim();
+        if(!t){
+            html += "<br>";
+            return;
+        }
+        // 检查是否是 [插图N]
+        const imgMatch = t.match(/^\[插图(\d)\]$/);
+        if(imgMatch){
+            const imgIdx = parseInt(imgMatch[1]);
+            if(images[imgIdx] && images[imgIdx].dataUrl){
+                html += `<div class="wx-inline-image square"><img src="${images[imgIdx].dataUrl}" alt="配图${imgIdx}"></div>`;
+            } else {
+                html += `<div class="wx-inline-image no-image square">配图${imgIdx}（未上传）</div>`;
+            }
+            return;
+        }
+        // 同时检查行内 [插图N]
+        const inlineMatch = t.match(/\[插图(\d)\]/g);
+        if(inlineMatch){
+            let processed = t;
+            inlineMatch.forEach(m=>{
+                const num = m.match(/\d/)[0];
+                if(images[parseInt(num)] && images[parseInt(num)].dataUrl){
+                    processed = processed.replace(m, "");
+                    // 在段落后面插入图片
+                }
+            });
+            if(t.startsWith("## ")){
+                html += `<div class="wx-subtitle">${t.replace("## ","")}</div>`;
+            } else {
+                html += t + "<br>";
+            }
+        } else if(t.startsWith("## ")){
+            html += `<div class="wx-subtitle">${t.replace("## ","")}</div>`;
+        } else {
+            html += t + "<br>";
+        }
+    });
+
+    bodyEl.innerHTML = html;
+    refreshInlineImages();
+}
+
+function refreshInlineImages(){
+    // 重新遍历正文，在 [插图N] 位置插入图片
+    const bodyEl = document.getElementById("previewBody");
+    if(!bodyEl) return;
+
+    let html = bodyEl.innerHTML;
+
+    // 替换 [插图1] [插图2] [插图3] 为图片
+    for(let i=1; i<=3; i++){
+        if(images[i] && images[i].dataUrl){
+            const placeholder = `[插图${i}]`;
+            const imgHtml = `<div class="wx-inline-image square"><img src="${images[i].dataUrl}" alt="配图${i}"></div>`;
+            html = html.split(placeholder).join(imgHtml);
+        }
+    }
+
+    bodyEl.innerHTML = html;
+}
+
+// ============ 清除图片 ============
+function clearImage(index){
+    images[index] = null;
+    // 清除左侧上传区
+    const zone = document.getElementById(`uploadZone${index}`);
+    if(zone) zone.classList.remove("has-image");
+    const textEl = document.getElementById(`uploadText${index}`);
+    if(textEl) textEl.innerText = index===0?"点击上传封面图":(index===4?"上传结尾引导图":`上传配图${index}`);
+    // 清除右侧预览
+    if(index === 0){
+        const cover = document.getElementById("wxCover");
+        cover.innerHTML = "<span>封面图（上传后显示）</span>";
+        cover.classList.add("no-image");
+    } else if(index >= 1 && index <= 3){
+        refreshInlineImages();
+    } else if(index === 4){
+        const ending = document.getElementById("wxEndingImage");
+        ending.innerHTML = "<span>引导图（上传后显示）</span>";
+        ending.classList.add("no-image");
+    }
+}
+
+// ============ 豆包Key联动 ============
+document.addEventListener("change", function(e){
+    if(e.target.id && e.target.id.startsWith("aiApi")){
+        const index = e.target.id.replace("aiApi","");
+        const keyInput = document.getElementById(`doubaoKey${index}`);
+        keyInput.style.display = e.target.value === "doubao" ? "block" : "none";
+    }
+});
+
+// ============ DeepSeek 生成 ============
+async function generateArticle(){
+    const apiKey = document.getElementById("apiKey").value.trim();
+    const topic = document.getElementById("customTopic").value.trim();
+    if(!apiKey){alert("请先输入 DeepSeek API Key");return;}
+    if(!topic){alert("请选择或输入一个选题");return;}
+
+    document.getElementById("previewTitle").innerText = "正在生成...";
+    document.getElementById("previewSummary").innerText = "";
+    document.getElementById("previewBody").innerHTML = "AI正在写作，约10-20秒...";
+    document.getElementById("previewCta").innerHTML = "";
+    document.getElementById("previewRec").innerHTML = `<div class="rec-title">— 推荐阅读 —</div>`;
+    document.getElementById("articleTime").innerText = "刚刚";
+
+    const prompt = `你是一个家政公司的公众号写手，你写的东西像一个做了十年家政行业的真人写出来的——不堆砌emoji、不用AI套话、不端着说话。
+
+写一篇公众号文章，选题是：
+
+《${topic}》
+
+【写作铁律——必须遵守】
+1. 全文emoji不超过3个，宁少勿多
+2. 禁止以下写法：
+   - 禁止用"在当今社会""随着时代发展""值得注意的是""总而言之""综上所述"开头或过渡
+   - 禁止用"首先...其次...最后...""一方面...另一方面..."这种机器分段
+   - 禁止堆砌形容词和排比句
+   - 禁止每一段开头用同样的句式
+3. 正确的写法：
+   - 像一个从业者在跟朋友聊天，该用"我"就用"我"，该用"你"就用"你"
+   - 用具体的场景、真实的数字、实际发生的事来说明问题
+   - 长句短句换着用，不要每段三句话一个格式
+   - 可以有口语化的表达，比如"说实话""说白了""很多人不知道的是"
+   - 该分段就分段，该一句话独立成段就独立成段
+
+【插图位置】
+在正文中合适的位置插入 [插图1]、[插图2]、[插图3] 标记（每个占独立一行），这些位置将替换为上传的配图。至少插入2个标记。
+
+【输出结构】
+1. 标题：15-25字，让人想看但不是标题党
+2. 摘要：50-60字
+3. 正文：1000-1500字，用 ## 标记小标题（3-4个小标题），在合适位置插入 [插图N] 标记
+4. 转化引导：1-2句话，自然引导加微信/预约咨询
+5. 推荐阅读：列出2-3篇相关文章标题
+
+【排版格式——直接搬运到公众号】
+- 每个小标题（## 标记）前后各空一行
+- 每段之间空一行
+- [插图N] 独占一行，前后空行
+
+严格按以下格式输出：
+
+【标题】
+xxx
+
+【摘要】
+xxx
+
+【正文】
+## 小标题1
+
+段落内容...
+
+[插图1]
+
+段落内容...
+
+## 小标题2
+
+段落内容...
+
+[插图2]
+
+段落内容...
+
+【转化引导】
+xxx
+
+【推荐阅读】
+- xxx
+- xxx`;
+
+    try{
+        const response = await fetch("https://api.deepseek.com/chat/completions",{
+            method:"POST",
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
+            body:JSON.stringify({
+                model:"deepseek-chat",
+                messages:[
+                    {role:"system",content:"你是一个有十年家政行业经验的公众号写手。你的文字读起来像一个真实的人写的——自然、具体、不堆砌形容词、不用AI套话。你会在正文中标记[插图1][插图2]等位置来指示配图插入点。"},
+                    {role:"user",content:prompt}
+                ],
+                temperature:0.85,
+                max_tokens:3000
+            })
+        });
+
+        if(!response.ok){
+            const errData = await response.json().catch(()=>({}));
+            throw new Error(errData.error?.message || `请求失败(${response.status})`);
+        }
+        const data = await response.json();
+        if(!data.choices||!data.choices[0]) throw new Error("API返回异常");
+        parseArticle(data.choices[0].message.content);
+    } catch(err){
+        alert("生成失败："+err.message);
+        document.getElementById("previewTitle").innerText = "生成失败";
+        document.getElementById("previewBody").innerHTML = err.message;
+    }
+}
+
+// ============ 解析文章 ============
+function parseArticle(text){
+    const titleMatch = text.match(/【标题】\s*([\s\S]*?)【摘要】/);
+    const summaryMatch = text.match(/【摘要】\s*([\s\S]*?)【正文】/);
+    const bodyMatch = text.match(/【正文】\s*([\s\S]*?)【转化引导】/);
+    const ctaMatch = text.match(/【转化引导】\s*([\s\S]*?)【推荐阅读】/);
+    const recMatch = text.match(/【推荐阅读】\s*([\s\S]*)/);
+
+    const title = titleMatch ? titleMatch[1].trim() : "";
+    const summary = summaryMatch ? summaryMatch[1].trim() : "";
+    const rawBody = bodyMatch ? bodyMatch[1].trim() : "";
+    const cta = ctaMatch ? ctaMatch[1].trim() : "";
+    const rec = recMatch ? recMatch[1].trim() : "";
+
+    // 渲染正文——处理 ## 小标题和 [插图N]
+    const bodyHtml = renderBody(rawBody);
+
+    document.getElementById("previewTitle").innerText = title||"（解析失败）";
+    document.getElementById("previewSummary").innerText = summary||"";
+    document.getElementById("previewBody").innerHTML = bodyHtml;
+    document.getElementById("previewCta").innerHTML = cta||"";
+
+    const recHtml = rec
+        ? `<div class="rec-title">— 推荐阅读 —</div>\n${rec.split("\n").filter(l=>l.trim()).map(l=>`<div class="rec-item">${l.replace(/^-\s*/,"")}</div>`).join("\n")}`
+        : `<div class="rec-title">— 推荐阅读 —</div>`;
+    document.getElementById("previewRec").innerHTML = recHtml;
+
+    // 同步封面和结尾图
+    syncImageToPreview(0);
+    syncImageToPreview(4);
+
+    currentArticle = {title,summary,body:rawBody,cta,rec,time:new Date().toLocaleString("zh-CN")};
+    saveHistory(currentArticle);
+}
+
+function renderBody(rawBody){
+    return rawBody.split("\n").map(line=>{
+        const t = line.trim();
+        if(!t) return "<br>";
+
+        // [插图N] 标记
+        const imgMatch = t.match(/^\[插图(\d)\]$/);
+        if(imgMatch){
+            const idx = parseInt(imgMatch[1]);
+            if(images[idx] && images[idx].dataUrl){
+                return `<div class="wx-inline-image square"><img src="${images[idx].dataUrl}" alt="配图${idx}"></div>`;
+            }
+            return `<div class="wx-inline-image no-image square">配图${idx}（请上传图片）</div>`;
+        }
+
+        // ## 小标题
+        if(t.startsWith("## ")){
+            return `<div class="wx-subtitle">${t.replace("## ","")}</div>`;
+        }
+
+        return t;
+    }).join("\n");
+}
+
+// ============ 复制 ============
+function copyFormatted(){
+    if(!currentArticle){alert("请先生成一篇文章");return;}
+    const t = currentArticle.title||"";
+    const s = currentArticle.summary||"";
+    const b = currentArticle.body||"";
+    const c = currentArticle.cta||"";
+    const r = currentArticle.rec||"";
+    const formatted = `【标题】\n${t}\n\n【摘要】\n${s}\n\n【正文】\n${b}\n\n${c?c:""}\n\n${r?"推荐阅读：\n"+r:""}`;
+    navigator.clipboard.writeText(formatted).then(()=>{
+        alert("全文已复制\n\n打开公众号编辑器 Ctrl+V 粘贴\n标题和摘要需单独填入后台对应位置\n[插图N] 处请替换为实际图片");
+    }).catch(()=>alert("复制失败"));
+}
+
+function copyBodyOnly(){
+    if(!currentArticle){alert("请先生成一篇文章");return;}
+    const b = currentArticle.body||"";
+    navigator.clipboard.writeText(b).then(()=>alert("正文已复制，可直接粘贴到公众号编辑器")).catch(()=>alert("复制失败"));
+}
+
+function copySection(type){
+    if(!currentArticle){alert("请先生成一篇文章");return;}
+    const t = document.getElementById("previewTitle").innerText;
+    navigator.clipboard.writeText(type==="title"?t:(currentArticle.body||"")).then(()=>alert("已复制")).catch(()=>alert("复制失败"));
+}
+
+// ============ 编辑弹窗 ============
+function editArticle(){
+    if(!currentArticle){alert("请先生成一篇文章");return;}
+    document.getElementById("editTitle").value = currentArticle.title||"";
+    document.getElementById("editSummary").value = currentArticle.summary||"";
+    document.getElementById("editBody").value = currentArticle.body||"";
+    document.getElementById("editCta").value = currentArticle.cta||"";
+    document.getElementById("editModal").style.display = "flex";
+}
+function saveEdit(){
+    const title = document.getElementById("editTitle").value.trim();
+    const summary = document.getElementById("editSummary").value.trim();
+    const body = document.getElementById("editBody").value.trim();
+    const cta = document.getElementById("editCta").value.trim();
+
+    document.getElementById("previewTitle").innerText = title;
+    document.getElementById("previewSummary").innerText = summary;
+    document.getElementById("previewBody").innerHTML = renderBody(body);
+    document.getElementById("previewCta").innerHTML = cta;
+    syncImageToPreview(0);
+    syncImageToPreview(4);
+    document.getElementById("editModal").style.display = "none";
+
+    currentArticle = {title,summary,body,cta,rec:currentArticle.rec,time:new Date().toLocaleString("zh-CN"),edited:true};
+    saveHistory(currentArticle);
+}
+function closeEdit(){document.getElementById("editModal").style.display = "none";}
+document.addEventListener("click",function(e){if(e.target===document.getElementById("editModal"))closeEdit();});
+
+// ============ 历史 ============
+function saveHistory(item){
+    let history = JSON.parse(localStorage.getItem("wx_hk_history_v2")||"[]");
+    history.unshift({...item});
+    history = history.slice(0,20);
+    localStorage.setItem("wx_hk_history_v2",JSON.stringify(history));
+    renderHistory();
+}
+function renderHistory(){
+    const history = JSON.parse(localStorage.getItem("wx_hk_history_v2")||"[]");
+    const box = document.getElementById("historyList");
+    if(history.length===0){
+        box.innerHTML = `<div style="color:#444;text-align:center;padding:10px;font-size:11px;">暂无历史</div>`;
+        return;
+    }
+    box.innerHTML = "";
+    history.forEach(item=>{
+        const div = document.createElement("div");
+        div.className = "history-item";
+        const editBadge = item.edited?' <span style="color:#ff2442;font-size:9px;">[改]</span>':'';
+        div.innerHTML = `<div style="display:flex;justify-content:space-between;"><span style="flex:1;">${item.title||"(无标题)"}</span><span style="color:#444;font-size:9px;">${item.time||""}</span></div>${editBadge}`;
+        div.onclick = ()=>{
+            currentArticle = item;
+            document.getElementById("previewTitle").innerText = item.title||"";
+            document.getElementById("previewSummary").innerText = item.summary||"";
+            document.getElementById("previewBody").innerHTML = renderBody(item.body||"");
+            document.getElementById("previewCta").innerHTML = item.cta||"";
+            const recHtml = item.rec
+                ? `<div class="rec-title">— 推荐阅读 —</div>\n${item.rec.split("\n").filter(l=>l.trim()).map(l=>`<div class="rec-item">${l.replace(/^-\s*/,"")}</div>`).join("\n")}`
+                : `<div class="rec-title">— 推荐阅读 —</div>`;
+            document.getElementById("previewRec").innerHTML = recHtml;
+            syncImageToPreview(0);
+            syncImageToPreview(4);
+            for(let i=1;i<=3;i++) syncImageToPreview(i);
+        };
+        box.appendChild(div);
+    });
+}
+function clearHistory(){
+    if(confirm("确定清空全部历史？")){localStorage.removeItem("wx_hk_history_v2");renderHistory();currentArticle=null;}
+}
+renderHistory();
+
+// ============ 提示词翻译 ============
+function translatePrompt(text){
+    if(!/[一-龥]/.test(text)) return text;
+    const map = {
+        "家政":"housekeeping service","月嫂":"confinement nanny","育婴师":"childcare professional",
+        "养老":"elderly care","护理":"nursing care","老人":"elderly person","家庭":"family",
+        "妈妈":"mother","宝宝":"baby","孩子":"child","培训":"training","服务":"service",
+        "专业":"professional","温暖":"warm","温馨":"cozy","干净":"clean","明亮":"bright",
+        "自然":"natural","真实":"authentic","生活化":"lifestyle","摄影":"photography",
+        "风格":"style","封面":"cover","引导":"guide","关注":"follow","微信":"social media",
+        "场景":"scene","时刻":"moment","光线":"lighting","环境":"environment","团队":"team",
+        "互动":"interaction","展示":"display","细节":"detail","氛围":"atmosphere"
+    };
+    let result = text;
+    for(const[cn,en] of Object.entries(map)) result = result.replace(new RegExp(cn,"g"),en);
+    if(/[一-龥]/.test(result)) result = "authentic home care service scene, warm natural lighting, lifestyle photography, professional quality";
+    return result;
+}
+
+// 快捷键
+document.addEventListener("keydown",function(e){
+    if(e.ctrlKey&&e.key==="Enter"){e.preventDefault();generateArticle();}
+    if(e.key==="Escape")closeEdit();
+});
+</script>
+</body>
+</html>
