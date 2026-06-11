@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>小红书月嫂获客内容生成助手</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+}
+
+body{
+    background:#111;
+    color:#fff;
+    height:100vh;
+    overflow:hidden;
+}
+
+.container{
+    display:flex;
+    height:100vh;
+}
+
+/* 左侧 */
+.left-panel{
+    width:42%;
+    background:#181818;
+    padding:20px;
+    overflow-y:auto;
+    border-right:1px solid #333;
+}
+
+.right-panel{
+    flex:1;
+    background:#0f0f0f;
+    padding:20px;
+    overflow-y:auto;
+}
+
+/* 标题 */
+.header{
+    margin-bottom:20px;
+}
+
+.header h1{
+    color:#ff2442;
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.header p{
+    color:#999;
+}
+
+/* 卡片 */
+.card{
+    background:#1f1f1f;
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:18px;
+    border:1px solid #2a2a2a;
+}
+
+.card h2{
+    color:#ff2442;
+    font-size:18px;
+    margin-bottom:15px;
+}
+
+input, textarea, select{
+    width:100%;
+    background:#111;
+    border:1px solid #333;
+    border-radius:10px;
+    padding:12px;
+    color:#fff;
+    margin-bottom:12px;
+}
+
+textarea{
+    resize:vertical;
+}
+
+button{
+    background:#ff2442;
+    color:#fff;
+    border:none;
+    padding:12px 16px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.2s;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:0.9;
+    transform:translateY(-1px);
+}
+
+.btn-group{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.topic-box{
+    background:#111;
+    border:1px solid #333;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:10px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.topic-box:hover{
+    border-color:#ff2442;
+    background:#1b1b1b;
+}
+
+/* 手机预览 */
+.phone{
+    width:390px;
+    margin:auto;
+    background:#fff;
+    color:#111;
+    border-radius:40px;
+    padding:20px;
+    min-height:760px;
+}
+
+.phone-header{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:20px;
+    color:#ff2442;
+}
+
+.preview-title{
+    font-size:24px;
+    font-weight:bold;
+    margin-bottom:15px;
+    line-height:1.5;
+}
+
+.preview-content{
+    white-space:pre-wrap;
+    line-height:1.8;
+    color:#333;
+}
+
+.preview-tags{
+    margin-top:20px;
+    color:#ff2442;
+    line-height:2;
+}
+
+/* 图片卡片 */
+.image-grid{
+    display:flex;
+    gap:14px;
+    margin-top:15px;
+}
+
+.image-card{
+    flex:1;
+    background:#151515;
+    border:1px solid #333;
+    border-radius:14px;
+    padding:12px;
+}
+
+.image-card h4{
+    color:#ff2442;
+    margin-bottom:10px;
+}
+
+.image-preview{
+    width:100%;
+    aspect-ratio:1/1;
+    background:#222;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#777;
+    font-size:12px;
+}
+
+.image-preview img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.small-btn{
+    padding:8px 12px;
+    font-size:12px;
+}
+
+.history-item{
+    background:#111;
+    border:1px solid #333;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:10px;
+    cursor:pointer;
+}
+
+.history-item:hover{
+    border-color:#ff2442;
+}
+
+.link-btn{
+    display:inline-block;
+    text-decoration:none;
+    margin-top:15px;
+    background:#ff2442;
+    color:#fff;
+    padding:12px 20px;
+    border-radius:10px;
+}
+
+::-webkit-scrollbar{
+    width:6px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#444;
+    border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- 左侧 -->
+    <div class="left-panel">
+
+        <div class="header">
+            <h1>月嫂行业 · 小红书内容助手</h1>
+            <p>AI生成爆款小红书图文内容</p>
+        </div>
+
+        <!-- API -->
+        <div class="card">
+            <h2>DeepSeek API</h2>
+            <input type="password" id="apiKey" placeholder="输入 DeepSeek API Key">
+        </div>
+
+        <!-- 选题 -->
+        <div class="card">
+            <h2>爆款选题推荐</h2>
+
+            <select id="topicType">
+                <option value="all">全部类型</option>
+                <option value="避坑类">避坑类</option>
+                <option value="攻略类">攻略类</option>
+                <option value="案例类">案例类</option>
+                <option value="对比类">对比类</option>
+                <option value="干货类">干货类</option>
+            </select>
+
+            <div id="topicList"></div>
+
+            <div class="btn-group">
+                <button onclick="refreshTopics()">换一批</button>
+            </div>
+
+            <textarea id="customTopic" rows="3" placeholder="或者输入自定义选题"></textarea>
+
+            <button style="width:100%;" onclick="generateContent()">
+                AI生成小红书文案
+            </button>
+        </div>
+
+        <!-- 配图 -->
+        <div class="card">
+            <h2>AI配图方案</h2>
+
+            <div class="image-grid">
+
+                <!-- 封面 -->
+                <div class="image-card">
+                    <h4>封面图</h4>
+
+                    <textarea id="prompt1">高级月嫂照顾新生儿，温馨母婴场景，高级感摄影，xiaohongshu style</textarea>
+
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(1)">生成图片</button>
+                        <button class="small-btn" onclick="regenerateImage(1)">重新生成</button>
+                    </div>
+
+                    <input type="file" accept="image/*" onchange="uploadImage(event,1)">
+
+                    <div class="image-preview" id="preview1">
+                        图片预览
+                    </div>
+                </div>
+
+                <!-- 内容图 -->
+                <div class="image-card">
+                    <h4>内容图</h4>
+
+                    <textarea id="prompt2">月嫂护理宝宝细节，母婴护理过程，真实生活感，clean style</textarea>
+
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(2)">生成图片</button>
+                        <button class="small-btn" onclick="regenerateImage(2)">重新生成</button>
+                    </div>
+
+                    <input type="file" accept="image/*" onchange="uploadImage(event,2)">
+
+                    <div class="image-preview" id="preview2">
+                        图片预览
+                    </div>
+                </div>
+
+                <!-- 结尾 -->
+                <div class="image-card">
+                    <h4>结尾图</h4>
+
+                    <textarea id="prompt3">月子家庭幸福合影，温暖家庭氛围，小红书高级感</textarea>
+
+                    <div class="btn-group">
+                        <button class="small-btn" onclick="generateImage(3)">生成图片</button>
+                        <button class="small-btn" onclick="regenerateImage(3)">重新生成</button>
+                    </div>
+
+                    <input type="file" accept="image/*" onchange="uploadImage(event,3)">
+
+                    <div class="image-preview" id="preview3">
+                        图片预览
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 发布 -->
+        <div class="card">
+            <h2>发布准备</h2>
+
+            <div class="btn-group">
+                <button onclick="copyTitle()">复制标题</button>
+                <button onclick="copyContent()">复制正文</button>
+                <button onclick="copyAll()">复制全部</button>
+            </div>
+
+            <a class="link-btn"
+               href="https://creator.xiaohongshu.com/"
+               target="_blank">
+                去小红书发布
+            </a>
+        </div>
+
+        <!-- 历史 -->
+        <div class="card">
+            <h2>历史记录</h2>
+            <div id="historyList"></div>
+        </div>
+
+    </div>
+
+    <!-- 右侧 -->
+    <div class="right-panel">
+
+        <div class="phone">
+
+            <div class="phone-header">
+                小红书预览
+            </div>
+
+            <div class="preview-title" id="previewTitle">
+                AI生成的标题会显示在这里
+            </div>
+
+            <div class="preview-content" id="previewContent">
+                正文内容预览...
+            </div>
+
+            <div class="preview-tags" id="previewTags">
+                #月嫂 #育儿
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* =========================
+   选题库
+========================= */
+
+const topics = [
+
+{type:"避坑类", title:"请月嫂千万别只看价格！很多家庭都踩坑了"},
+{type:"避坑类", title:"第一次找月嫂，这5个细节不问等于白请"},
+{type:"避坑类", title:"为什么很多宝妈请完月嫂后后悔？"},
+{type:"避坑类", title:"月嫂面试最容易忽略的3个问题"},
+{type:"避坑类", title:"便宜月嫂和高端月嫂差距到底有多大？"},
+
+{type:"攻略类", title:"2026最新月嫂挑选攻略"},
+{type:"攻略类", title:"新手爸妈怎么找到靠谱月嫂？"},
+{type:"攻略类", title:"月嫂怎么选才不踩雷？"},
+{type:"攻略类", title:"找月嫂一定要提前多久？"},
+{type:"攻略类", title:"月嫂面试标准流程分享"},
+
+{type:"案例类", title:"客户花12800请月嫂后真实体验"},
+{type:"案例类", title:"90后宝妈找月嫂全过程"},
+{type:"案例类", title:"一个月嫂让全家轻松了多少"},
+{type:"案例类", title:"真实案例：请对月嫂真的太重要了"},
+{type:"案例类", title:"客户为什么连续二胎还找同一个月嫂"},
+
+{type:"对比类", title:"住月子中心还是请月嫂？"},
+{type:"对比类", title:"金牌月嫂和普通月嫂差别在哪"},
+{type:"对比类", title:"请月嫂VS老人带娃"},
+{type:"对比类", title:"线上找月嫂和线下找月嫂哪个好"},
+{type:"对比类", title:"熟人介绍月嫂靠谱吗？"},
+
+{type:"干货类", title:"月嫂每天都在做什么？"},
+{type:"干货类", title:"月嫂服务到底包含哪些内容"},
+{type:"干货类", title:"请月嫂前一定要知道的行业内幕"},
+{type:"干货类", title:"为什么现在越来越多人请月嫂"},
+{type:"干货类", title:"高级月嫂都有哪些标准"}
+
+];
+
+let currentTopic = "";
+
+/* =========================
+   刷新选题
+========================= */
+
+function refreshTopics(){
+
+    const type = document.getElementById("topicType").value;
+
+    let filtered = type === "all"
+        ? topics
+        : topics.filter(t=>t.type===type);
+
+    filtered = filtered.sort(()=>0.5 - Math.random());
+
+    const picked = filtered.slice(0,3);
+
+    const box = document.getElementById("topicList");
+
+    box.innerHTML = "";
+
+    picked.forEach(item=>{
+
+        const div = document.createElement("div");
+
+        div.className = "topic-box";
+
+        div.innerHTML = `
+            <strong>[${item.type}]</strong><br>
+            ${item.title}
+        `;
+
+        div.onclick = ()=>{
+            currentTopic = item.title;
+            document.getElementById("customTopic").value = item.title;
+        };
+
+        box.appendChild(div);
+
+    });
+
+}
+
+refreshTopics();
+
+/* =========================
+   DeepSeek 生成
+========================= */
+
+async function generateContent(){
+
+    const apiKey = document.getElementById("apiKey").value.trim();
+
+    const topic = document.getElementById("customTopic").value.trim();
+
+    if(!apiKey){
+        alert("请输入 DeepSeek API Key");
+        return;
+    }
+
+    if(!topic){
+        alert("请输入选题");
+        return;
+    }
+
+    document.getElementById("previewTitle").innerText = "生成中...";
+    document.getElementById("previewContent").innerText = "AI正在写文案...";
+    document.getElementById("previewTags").innerText = "";
+
+    const prompt = `
+你是一名专业的小红书月嫂行业运营专家。
+
+请围绕这个选题：
+
+《${topic}》
+
+生成一篇小红书爆款图文文案。
+
+要求：
+
+1、输出：
+- 爆款标题
+- 正文（500字以内）
+- 10个标签
+
+2、风格：
+- 小红书风格
+- 有emoji
+- 口语化
+- 有真实感
+- 分段清晰
+- 结尾引导互动
+
+3、目标：
+- 吸引宝妈咨询月嫂
+- 提升信任感
+
+请严格按以下格式输出：
+
+【标题】
+xxx
+
+【正文】
+xxx
+
+【标签】
+#xxx #xxx
+`;
+
+    try{
+
+        const response = await fetch(
+            "https://api.deepseek.com/chat/completions",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":"Bearer " + apiKey
+                },
+                body:JSON.stringify({
+                    model:"deepseek-chat",
+                    messages:[
+                        {
+                            role:"user",
+                            content:prompt
+                        }
+                    ],
+                    temperature:0.9
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        const text = data.choices[0].message.content;
+
+        parseContent(text);
+
+    }catch(err){
+
+        alert("生成失败：" + err.message);
+
+    }
+
+}
+
+/* =========================
+   解析文案
+========================= */
+
+function parseContent(text){
+
+    const titleMatch = text.match(/【标题】([\s\S]*?)【正文】/);
+    const contentMatch = text.match(/【正文】([\s\S]*?)【标签】/);
+    const tagMatch = text.match(/【标签】([\s\S]*)/);
+
+    const title = titleMatch ? titleMatch[1].trim() : "";
+    const content = contentMatch ? contentMatch[1].trim() : "";
+    const tags = tagMatch ? tagMatch[1].trim() : "";
+
+    document.getElementById("previewTitle").innerText = title;
+    document.getElementById("previewContent").innerText = content;
+    document.getElementById("previewTags").innerText = tags;
+
+    saveHistory({
+        title,
+        content,
+        tags
+    });
+
+}
+
+/* =========================
+   图片生成
+========================= */
+
+function generateImage(index){
+
+    const prompt = document.getElementById(`prompt${index}`).value;
+
+    const encoded = encodeURIComponent(prompt);
+
+    const seed = Math.random();
+
+    const url =
+`https://image.pollinations.ai/prompt/${encoded}?width=1080&height=1080&nologo=true&seed=${seed}`;
+
+    document.getElementById(`preview${index}`).innerHTML = `
+        <img src="${url}">
+    `;
+
+}
+
+function regenerateImage(index){
+    generateImage(index);
+}
+
+/* =========================
+   上传图片
+========================= */
+
+function uploadImage(event,index){
+
+    const file = event.target.files[0];
+
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        document.getElementById(`preview${index}`).innerHTML = `
+            <img src="${e.target.result}">
+        `;
+
+    }
+
+    reader.readAsDataURL(file);
+
+}
+
+/* =========================
+   复制
+========================= */
+
+function copyTitle(){
+
+    navigator.clipboard.writeText(
+        document.getElementById("previewTitle").innerText
+    );
+
+    alert("标题已复制");
+
+}
+
+function copyContent(){
+
+    const text =
+document.getElementById("previewContent").innerText
++ "\n\n" +
+document.getElementById("previewTags").innerText;
+
+    navigator.clipboard.writeText(text);
+
+    alert("正文已复制");
+
+}
+
+function copyAll(){
+
+    const text =
+document.getElementById("previewTitle").innerText
++ "\n\n" +
+document.getElementById("previewContent").innerText
++ "\n\n" +
+document.getElementById("previewTags").innerText;
+
+    navigator.clipboard.writeText(text);
+
+    alert("全部内容已复制");
+
+}
+
+/* =========================
+   历史记录
+========================= */
+
+function saveHistory(item){
+
+    let history = JSON.parse(
+        localStorage.getItem("xhs_history") || "[]"
+    );
+
+    history.unshift(item);
+
+    history = history.slice(0,20);
+
+    localStorage.setItem(
+        "xhs_history",
+        JSON.stringify(history)
+    );
+
+    renderHistory();
+
+}
+
+function renderHistory(){
+
+    const history = JSON.parse(
+        localStorage.getItem("xhs_history") || "[]"
+    );
+
+    const box = document.getElementById("historyList");
+
+    box.innerHTML = "";
+
+    history.forEach(item=>{
+
+        const div = document.createElement("div");
+
+        div.className = "history-item";
+
+        div.innerHTML = `
+            <strong>${item.title}</strong>
+        `;
+
+        div.onclick = ()=>{
+
+            document.getElementById("previewTitle").innerText = item.title;
+            document.getElementById("previewContent").innerText = item.content;
+            document.getElementById("previewTags").innerText = item.tags;
+
+        }
+
+        box.appendChild(div);
+
+    });
+
+}
+
+renderHistory();
+
+</script>
+
+</body>
+</html>
